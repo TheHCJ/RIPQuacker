@@ -17,7 +17,8 @@ import 'package:quiver/iterables.dart';
 import 'package:synchronized/synchronized.dart';
 
 const Duration _defaultTimeout = Duration(seconds: 30);
-const String _accessToken = 'AAAAAAAAAAAAAAAAAAAAAGHtAgAAAAAA%2Bx7ILXNILCqkSGIzy6faIHZ9s3Q%3DQy97w6SIrzE7lQwPJEYQBsArEE2fC25caFwRBvAGi456G09vGR';
+const String _accessToken =
+    'AAAAAAAAAAAAAAAAAAAAAGHtAgAAAAAA%2Bx7ILXNILCqkSGIzy6faIHZ9s3Q%3DQy97w6SIrzE7lQwPJEYQBsArEE2fC25caFwRBvAGi456G09vGR';
 
 class _SquawkerTwitterClient extends TwitterClient {
   static final log = Logger('_SquawkerTwitterClient');
@@ -36,10 +37,12 @@ class _SquawkerTwitterClient extends TwitterClient {
     return getWithRateFetchCtx(uri, headers: headers, timeout: timeout);
   }
 
-  Future<http.Response> getWithRateFetchCtx(Uri uri, {Map<String, String>? headers, Duration? timeout, RateFetchContext? fetchContext}) async {
+  Future<http.Response> getWithRateFetchCtx(Uri uri,
+      {Map<String, String>? headers, Duration? timeout, RateFetchContext? fetchContext}) async {
     try {
       log.info('Fetching $uri');
-      http.Response response = await TwitterAndroid.fetch(uri, headers: headers, fetchContext: fetchContext).timeout(timeout ?? _defaultTimeout);
+      http.Response response = await TwitterAndroid.fetch(uri, headers: headers, fetchContext: fetchContext)
+          .timeout(timeout ?? _defaultTimeout);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return response;
       } else {
@@ -47,8 +50,7 @@ class _SquawkerTwitterClient extends TwitterClient {
         log.severe('${response.statusCode} - ${utf8.decode(response.bodyBytes.toList())}');
         return Future.error(response);
       }
-    }
-    on Exception catch (err) {
+    } on Exception catch (err) {
       log.severe('error:');
       log.severe(err.toString());
       return Future.error(ExceptionResponse(err));
@@ -106,7 +108,8 @@ class _SquawkerTwitterClient extends TwitterClient {
       }
     }
 
-    var exc = Exception('Unable to refresh the token. The response (${response.statusCode}) from Twitter was: ${response.body}');
+    var exc = Exception(
+        'Unable to refresh the token. The response (${response.statusCode}) from Twitter was: ${response.body}');
     _guestTokenCompleter!.completeError(exc);
     throw exc;
   }
@@ -200,7 +203,8 @@ class Twitter {
     'pc': '1',
     'spelling_corrections': '1',
     'include_ext_edit_control': '1',
-    'ext': 'mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe,'
+    'ext':
+        'mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe,'
   };
 
   static Map<String, String> defaultFeatures = {
@@ -347,9 +351,9 @@ class Twitter {
           if (result != null) {
             if (result['rest_id'] != null || result['tweet'] != null) {
               result = result['rest_id'] != null ? result : result['tweet'];
-              replies.add(TweetChain(id: result['rest_id'], tweets: [TweetWithCard.fromGraphqlJson(result)], isPinned: false));
-            }
-            else {
+              replies.add(
+                  TweetChain(id: result['rest_id'], tweets: [TweetWithCard.fromGraphqlJson(result)], isPinned: false));
+            } else {
               replies.add(TweetChain(id: entryId.substring(6), tweets: [TweetWithCard.tombstone({})], isPinned: false));
             }
           } else {
@@ -410,7 +414,8 @@ class Twitter {
       variables['cursor'] = cursor;
     }
 
-    var response = await _twitterApi.client.get(Uri.https('api.twitter.com', '/graphql/3XDB26fBve-MmjHaWTUZxA/TweetDetail', {
+    var response =
+        await _twitterApi.client.get(Uri.https('api.twitter.com', '/graphql/3XDB26fBve-MmjHaWTUZxA/TweetDetail', {
       'variables': jsonEncode(variables),
       'features': jsonEncode(defaultFeatures),
     }));
@@ -441,7 +446,8 @@ class Twitter {
     return TweetStatus(chains: chains, cursorBottom: cursorBottom, cursorTop: cursorTop);
   }
 
-  static Future<TweetStatus> searchTweetsGraphql(String query, bool includeReplies, {int limit = 25, String? cursor, RateFetchContext? fetchContext}) async {
+  static Future<TweetStatus> searchTweetsGraphql(String query, bool includeReplies,
+      {int limit = 25, String? cursor, RateFetchContext? fetchContext}) async {
     var variables = {
       "rawQuery": query,
       "count": limit.toString(),
@@ -455,12 +461,11 @@ class Twitter {
       variables['cursor'] = cursor;
     }
 
-    var uri = Uri.https('api.twitter.com', '/graphql/nK1dw4oV3k4w5TdtcAdSww/SearchTimeline', {
-      'variables': jsonEncode(variables),
-      'features': jsonEncode(defaultFeatures)
-    });
+    var uri = Uri.https('api.twitter.com', '/graphql/gkjsKepM6gl_HmFWoWKfgg/SearchTimeline',
+        {'variables': jsonEncode(variables), 'features': jsonEncode(defaultFeatures)});
 
-    var response = await (_twitterApi.client as _SquawkerTwitterClient).getWithRateFetchCtx(uri, fetchContext: fetchContext);
+    var response =
+        await (_twitterApi.client as _SquawkerTwitterClient).getWithRateFetchCtx(uri, fetchContext: fetchContext);
     if (response.body.isEmpty) {
       return TweetStatus(chains: [], cursorBottom: null, cursorTop: null);
     }
@@ -474,7 +479,12 @@ class Twitter {
     return createUnconversationedChainsGraphql(timeline, 'tweet', [], includeReplies);
   }
 
-  static Future<TweetStatus> searchTweets(String query, bool includeReplies, {int limit = 25, String? cursor, String? cursorType, bool leanerFeeds = false, RateFetchContext? fetchContext}) async {
+  static Future<TweetStatus> searchTweets(String query, bool includeReplies,
+      {int limit = 25,
+      String? cursor,
+      String? cursorType,
+      bool leanerFeeds = false,
+      RateFetchContext? fetchContext}) async {
     var queryParameters = {
       'q': query,
       'count': limit.toString(),
@@ -500,13 +510,15 @@ class Twitter {
     if (cursor != null && cursorType != null) {
       if (cursorType == 'cursor_bottom') {
         queryParameters['max_id'] = cursor;
-      }
-      else { // cursorType == 'top'
+      } else {
+        // cursorType == 'top'
         queryParameters['since_id'] = cursor;
       }
     }
 
-    var response = await (_twitterApi.client as _SquawkerTwitterClient).getWithRateFetchCtx(Uri.https('api.twitter.com', '/1.1/search/tweets.json', queryParameters), fetchContext: fetchContext);
+    var response = await (_twitterApi.client as _SquawkerTwitterClient).getWithRateFetchCtx(
+        Uri.https('api.twitter.com', '/1.1/search/tweets.json', queryParameters),
+        fetchContext: fetchContext);
     if (response.body.isEmpty) {
       return TweetStatus(chains: [], cursorBottom: null, cursorTop: null);
     }
@@ -559,7 +571,7 @@ class Twitter {
     return chains;
   }
 
-  static TweetWithCard _fromCardJsonLegacy(Map<String,dynamic> tweetData) {
+  static TweetWithCard _fromCardJsonLegacy(Map<String, dynamic> tweetData) {
     var tweet = TweetWithCard.fromJson(tweetData);
 
     var quotedStatusMap = tweetData['quoted_status'];
@@ -593,7 +605,8 @@ class Twitter {
       queryParameters['cursor'] = cursor;
     }
 
-    var response = await _twitterApi.client.get(Uri.https('api.twitter.com', '/1.1/users/search.json', queryParameters));
+    var response =
+        await _twitterApi.client.get(Uri.https('api.twitter.com', '/1.1/users/search.json', queryParameters));
     if (response.body.isEmpty) {
       return [];
     }
@@ -690,8 +703,8 @@ class Twitter {
     return cursor;
   }
 
-  static TweetStatus createUnconversationedChainsGraphql(Map<String, dynamic> result, String tweetIndicator,
-      List<String> pinnedTweets, bool includeReplies) {
+  static TweetStatus createUnconversationedChainsGraphql(
+      Map<String, dynamic> result, String tweetIndicator, List<String> pinnedTweets, bool includeReplies) {
     var instructions = List.from(result['timeline']['instructions']);
     if (instructions.isEmpty || !instructions.any((e) => e['type'] == 'TimelineAddEntries')) {
       return TweetStatus(chains: [], cursorBottom: null, cursorTop: null);
@@ -745,8 +758,8 @@ class Twitter {
     return TweetStatus(chains: chains, cursorBottom: cursorBottom, cursorTop: cursorTop);
   }
 
-  static TweetStatus createUnconversationedChains(Map<String, dynamic> result, String tweetIndicator, String conversationIndicator,
-      List<String> pinnedTweets, bool includeReplies) {
+  static TweetStatus createUnconversationedChains(Map<String, dynamic> result, String tweetIndicator,
+      String conversationIndicator, List<String> pinnedTweets, bool includeReplies) {
     var instructions = List.from(result['timeline']['instructions']);
     if (instructions.isEmpty || !instructions.any((e) => e.containsKey('addEntries'))) {
       return TweetStatus(chains: [], cursorBottom: null, cursorTop: null);
@@ -767,8 +780,7 @@ class Twitter {
         .map((e) {
           if (e['entryId'].contains(tweetIndicator)) {
             return [e];
-          }
-          else {
+          } else {
             return e['content']['timelineModule']['items'];
           }
         })
@@ -776,8 +788,7 @@ class Twitter {
         .map((e) {
           if (e['content'] != null) {
             return e['content']['item']['content']['tweet']['id'];
-          }
-          else {
+          } else {
             return e['item']['content']['tweet']['id'];
           }
         })
@@ -869,7 +880,10 @@ class Twitter {
       if (elm['card']?['legacy'] != null) {
         Map<String, dynamic> card = elm['card']['legacy'];
         List bindingValuesList = card['binding_values'] as List;
-        Map bindingValues = bindingValuesList.fold({}, (prev, elm) { prev[elm['key']] = elm['value']; return prev; });
+        Map bindingValues = bindingValuesList.fold({}, (prev, elm) {
+          prev[elm['key']] = elm['value'];
+          return prev;
+        });
         card['binding_values'] = bindingValues;
         cards[elm['rest_id'] as String] = card;
       }
@@ -914,7 +928,8 @@ class Twitter {
       }
       twt.card ??= cards[twt.idStr];
       if (twt.quotedStatus == null && quotedStatusNotesTweets[twt.idStr]?['quotedResult'] != null) {
-        TweetWithCard twtCard = TweetWithCard.fromGraphqlJson(quotedStatusNotesTweets[twt.idStr]!['quotedResult'] as Map<String, dynamic>);
+        TweetWithCard twtCard =
+            TweetWithCard.fromGraphqlJson(quotedStatusNotesTweets[twt.idStr]!['quotedResult'] as Map<String, dynamic>);
         twt.quotedStatus = twtCard;
         twt.quotedStatusWithCard = twtCard;
       }
@@ -922,11 +937,14 @@ class Twitter {
       if (quotedStatusNotesTweets[twt.idStr]?['noteEntities'] != null) {
         Entities noteEntities = quotedStatusNotesTweets[twt.idStr]!['noteEntities'];
         twt.entities = twt.entities == null ? noteEntities : TweetWithCard.copyEntities(noteEntities, twt.entities!);
-        twt.extendedEntities = twt.extendedEntities == null ? noteEntities : TweetWithCard.copyEntities(noteEntities, twt.extendedEntities!);
+        twt.extendedEntities = twt.extendedEntities == null
+            ? noteEntities
+            : TweetWithCard.copyEntities(noteEntities, twt.extendedEntities!);
       }
     }
 
-    return {for (var e in tweets) e.idStr!: e};  }
+    return {for (var e in tweets) e.idStr!: e};
+  }
 
   static Map<String, TweetWithCard> _createTweets(
       String entryPrefix, Map<String, dynamic> result, bool includeReplies) {
@@ -982,8 +1000,9 @@ class TweetWithCard extends Tweet {
     var tweetWithCard = TweetWithCard();
     tweetWithCard.idStr = '';
     tweetWithCard.isTombstone = true;
-    tweetWithCard.text = ((e['richText']?['text'] ?? e['text']?['text'] ?? L10n.current.this_tweet_is_unavailable) as String)
-        .replaceFirst(' Learn more', '');
+    tweetWithCard.text =
+        ((e['richText']?['text'] ?? e['text']?['text'] ?? L10n.current.this_tweet_is_unavailable) as String)
+            .replaceFirst(' Learn more', '');
 
     return tweetWithCard;
   }
@@ -1034,10 +1053,15 @@ class TweetWithCard extends Tweet {
   factory TweetWithCard.fromGraphqlJson(Map<String, dynamic> result) {
     var retweetedStatus = result['retweeted_status_result']?.isEmpty ?? true
         ? null
-        : TweetWithCard.fromGraphqlJson(result['retweeted_status_result']['result']['rest_id'] == null ? result['retweeted_status_result']['result']['tweet'] : result['retweeted_status_result']['result']);
-    var quotedStatus = (result['quoted_status_result']?.isEmpty ?? true) || result['quoted_status_result']['result']['tombstone'] != null
+        : TweetWithCard.fromGraphqlJson(result['retweeted_status_result']['result']['rest_id'] == null
+            ? result['retweeted_status_result']['result']['tweet']
+            : result['retweeted_status_result']['result']);
+    var quotedStatus = (result['quoted_status_result']?.isEmpty ?? true) ||
+            result['quoted_status_result']['result']['tombstone'] != null
         ? null
-        : TweetWithCard.fromGraphqlJson(result['quoted_status_result']['result']['rest_id'] == null ? result['quoted_status_result']['result']['tweet'] : result['quoted_status_result']['result']);
+        : TweetWithCard.fromGraphqlJson(result['quoted_status_result']['result']['rest_id'] == null
+            ? result['quoted_status_result']['result']['tweet']
+            : result['quoted_status_result']['result']);
     var resCore = result['core']?['user_results']?['result'];
     var user = resCore?['legacy'] == null
         ? null
@@ -1053,11 +1077,15 @@ class TweetWithCard extends Tweet {
       noteEntities = Entities.fromJson(noteResult['entity_set']);
     }
 
-    TweetWithCard tweet = TweetWithCard.fromData(result['legacy'], noteText, noteEntities, user, retweetedStatus, quotedStatus);
+    TweetWithCard tweet =
+        TweetWithCard.fromData(result['legacy'], noteText, noteEntities, user, retweetedStatus, quotedStatus);
     if (tweet.card == null && result['card']?['legacy'] != null) {
       tweet.card = result['card']['legacy'];
       List bindingValuesList = tweet.card!['binding_values'] as List;
-      Map<String, dynamic> bindingValues = bindingValuesList.fold({}, (prev, elm) { prev[elm['key']] = elm['value']; return prev; });
+      Map<String, dynamic> bindingValues = bindingValuesList.fold({}, (prev, elm) {
+        prev[elm['key']] = elm['value'];
+        return prev;
+      });
       tweet.card!['binding_values'] = bindingValues;
     }
     return tweet;
@@ -1126,7 +1154,7 @@ class TweetWithCard extends Tweet {
     tweet.truncated = null;
     tweet.place = null;
     tweet.possiblySensitiveAppealable = null;
-    
+
     tweet.noteText = noteText;
     if (noteEntities != null) {
       tweet.entities = tweet.entities == null ? noteEntities : copyEntities(noteEntities, tweet.entities!);

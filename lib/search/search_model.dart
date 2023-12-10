@@ -11,7 +11,8 @@ class SearchTweetsModel extends Store<List<TweetWithCard>> {
         return [];
       } else {
         // TODO: Is this right?
-        return (await Twitter.searchTweets(query, true))
+
+        return (await Twitter.searchTweetsGraphql(query, true))
             .chains
             .map((e) => e.tweets)
             .expand((element) => element)
