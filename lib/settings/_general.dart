@@ -60,22 +60,6 @@ class SettingsGeneralFragment extends StatelessWidget {
         ]);
   }
 
-  void _createTweetFontSizeDialog(BuildContext context) async {
-    int? selectedFontSize = await showDialog<int>(
-      context: context,
-      builder: (context) => FontSizePickerDialog(initialFontSize: _getOptionTweetFontSizeValue(context)),
-    );
-    if (selectedFontSize != null) {
-      PrefService.of(context).set<int>(optionTweetFontSize, selectedFontSize);
-    }
-  }
-
-  int _getOptionTweetFontSizeValue(BuildContext context) {
-    int optionTweetFontSizeValue =
-        PrefService.of(context).get<int>(optionTweetFontSize) ?? DefaultTextStyle.of(context).style.fontSize!.round();
-    return optionTweetFontSizeValue;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,40 +110,6 @@ class SettingsGeneralFragment extends StatelessWidget {
               items: defaultSubscriptionTabs
                   .map((e) => DropdownMenuItem(value: e.id, child: Text(e.titleBuilder(context))))
                   .toList()),
-          PrefDropdown(
-              fullWidth: false,
-              title: Text(L10n.of(context).media_size),
-              subtitle: Text(
-                L10n.of(context).save_bandwidth_using_smaller_images,
-              ),
-              pref: optionMediaSize,
-              items: [
-                DropdownMenuItem(
-                  value: 'disabled',
-                  child: Text(L10n.of(context).disabled),
-                ),
-                DropdownMenuItem(
-                  value: 'thumb',
-                  child: Text(L10n.of(context).thumbnail),
-                ),
-                DropdownMenuItem(
-                  value: 'small',
-                  child: Text(L10n.of(context).small),
-                ),
-                DropdownMenuItem(
-                  value: 'medium',
-                  child: Text(L10n.of(context).medium),
-                ),
-                DropdownMenuItem(
-                  value: 'large',
-                  child: Text(L10n.of(context).large),
-                ),
-              ]),
-          PrefSwitch(
-            pref: optionMediaDefaultMute,
-            title: Text(L10n.of(context).mute_videos),
-            subtitle: Text(L10n.of(context).mute_video_description),
-          ),
           PrefSwitch(
             pref: optionTweetsHideSensitive,
             title: Text(L10n.of(context).hide_sensitive_tweets),
@@ -175,39 +125,79 @@ class SettingsGeneralFragment extends StatelessWidget {
             subtitle: Text(L10n.of(context).disable_screenshots_hint),
             pref: optionDisableScreenshots,
           ),
-          const DownloadTypeSetting(),
-          PrefSwitch(
-            title: Text(L10n.of(context).download_video_best_quality_label),
-            pref: optionDownloadBestVideoQuality,
-            subtitle: Text(L10n.of(context).download_video_best_quality_description),
-          ),
           PrefSwitch(
             title: Text(L10n.of(context).activate_non_confirmation_bias_mode_label),
             pref: optionNonConfirmationBiasMode,
             subtitle: Text(L10n.of(context).activate_non_confirmation_bias_mode_description),
           ),
-          PrefSwitch(
-            title: Text(L10n.of(context).keep_feed_offset_label),
-            subtitle: Text(L10n.of(context).keep_feed_offset_description),
-            pref: optionKeepFeedOffset,
-            onChange: (value) async {
-              if (!value) {
-                var repository = await Repository.writable();
-                await repository.delete(tableFeedGroupPositionState);
-              }
-            },
+          ExpansionTile(
+            title: Text(L10n.of(context).media),
+            leading: const Icon(Icons.image),
+            children: [
+              PrefDropdown(
+                  fullWidth: false,
+                  title: Text(L10n.of(context).media_size),
+                  subtitle: Text(
+                    L10n.of(context).save_bandwidth_using_smaller_images,
+                  ),
+                  pref: optionMediaSize,
+                  items: [
+                    DropdownMenuItem(
+                      value: 'disabled',
+                      child: Text(L10n.of(context).disabled),
+                    ),
+                    DropdownMenuItem(
+                      value: 'thumb',
+                      child: Text(L10n.of(context).thumbnail),
+                    ),
+                    DropdownMenuItem(
+                      value: 'small',
+                      child: Text(L10n.of(context).small),
+                    ),
+                    DropdownMenuItem(
+                      value: 'medium',
+                      child: Text(L10n.of(context).medium),
+                    ),
+                    DropdownMenuItem(
+                      value: 'large',
+                      child: Text(L10n.of(context).large),
+                    ),
+                  ]),
+              PrefSwitch(
+                pref: optionMediaDefaultMute,
+                title: Text(L10n.of(context).mute_videos),
+                subtitle: Text(L10n.of(context).mute_video_description),
+              ),
+              const DownloadTypeSetting(),
+              PrefSwitch(
+                title: Text(L10n.of(context).download_video_best_quality_label),
+                pref: optionDownloadBestVideoQuality,
+                subtitle: Text(L10n.of(context).download_video_best_quality_description),
+              ),
+            ],
           ),
-          PrefSwitch(
-            title: Text(L10n.of(context).leaner_feeds_label),
-            subtitle: Text(L10n.of(context).leaner_feeds_description),
-            pref: optionLeanerFeeds,
-          ),
-          PrefButton(
-            title: Text(L10n.of(context).tweet_font_size_label),
-            subtitle: Text(L10n.of(context).tweet_font_size_description),
-            onTap: () => _createTweetFontSizeDialog(context),
-            child: Text('${_getOptionTweetFontSizeValue(context)} px'),
-          ),
+          ExpansionTile(
+            title: Text(L10n.of(context).feed),
+            leading: const Icon(Icons.rss_feed),
+            children: [
+              PrefSwitch(
+                title: Text(L10n.of(context).keep_feed_offset_label),
+                subtitle: Text(L10n.of(context).keep_feed_offset_description),
+                pref: optionKeepFeedOffset,
+                onChange: (value) async {
+                  if (!value) {
+                    var repository = await Repository.writable();
+                    await repository.delete(tableFeedGroupPositionState);
+                  }
+                },
+              ),
+              PrefSwitch(
+                title: Text(L10n.of(context).leaner_feeds_label),
+                subtitle: Text(L10n.of(context).leaner_feeds_description),
+                pref: optionLeanerFeeds,
+              ),
+            ],
+          )
         ]),
       ),
     );
@@ -248,8 +238,8 @@ class DownloadTypeSettingState extends State<DownloadTypeSetting> {
               DeviceInfoPlugin plugin = DeviceInfoPlugin();
               AndroidDeviceInfo android = await plugin.androidInfo;
               var storagePermission = android.version.sdkInt < 30
-                ? await Permission.storage.request()
-                : await Permission.manageExternalStorage.request();
+                  ? await Permission.storage.request()
+                  : await Permission.manageExternalStorage.request();
               if (storagePermission.isGranted) {
                 String? directoryPath = await FilePicker.platform.getDirectoryPath();
                 if (directoryPath == null) {
@@ -277,66 +267,6 @@ class DownloadTypeSettingState extends State<DownloadTypeSetting> {
             ),
             child: Text(L10n.current.choose),
           )
-      ],
-    );
-  }
-}
-
-class FontSizePickerDialog extends StatefulWidget {
-  /// initial selection for the slider
-  final int initialFontSize;
-
-  const FontSizePickerDialog({Key? key, required this.initialFontSize}) : super(key: key);
-
-  @override
-  FontSizePickerDialogState createState() => FontSizePickerDialogState();
-}
-
-class FontSizePickerDialogState extends State<FontSizePickerDialog> {
-  /// current selection of the slider
-  late int tweetFontSize;
-
-  @override
-  void initState() {
-    super.initState();
-    tweetFontSize = widget.initialFontSize;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    double defaultFontSize = DefaultTextStyle.of(context).style.fontSize!;
-    double minFontSize = defaultFontSize - 4;
-    double maxFontSize = defaultFontSize + 8;
-    return AlertDialog(
-      title: Text(L10n.of(context).tweet_font_size_label),
-      content: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('$tweetFontSize px'),
-          Slider(
-            value: tweetFontSize.toDouble(),
-            min: minFontSize,
-            max: maxFontSize,
-            divisions: ((maxFontSize - minFontSize) / 2).round(),
-            label: '$tweetFontSize px',
-            onChanged: (value) {
-              setState(() {
-                tweetFontSize = value.round();
-              });
-            },
-          ),
-        ]
-      ),
-
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(L10n.of(context).cancel)),
-        TextButton(
-            onPressed: () async {
-              Navigator.pop(context, tweetFontSize);
-            },
-            child: Text(L10n.of(context).save)
-        )
       ],
     );
   }

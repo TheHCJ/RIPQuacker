@@ -171,7 +171,7 @@ Future<void> main() async {
     optionThemeMode: 'system',
     optionThemeTrueBlack: false,
     optionThemeMaterial3: false,
-    optionThemeColorScheme: 'gold',
+    optionThemeColorScheme: 'mango',
     optionTweetsHideSensitive: false,
     optionKeepFeedOffset: false,
     optionLeanerFeeds: false,
@@ -264,7 +264,7 @@ class _SquawkerAppState extends State<SquawkerApp> with WidgetsBindingObserver {
   String _themeMode = 'system';
   bool _trueBlack = false;
   bool _material3 = false;
-  FlexScheme _colorScheme = FlexScheme.gold;
+  FlexScheme _colorScheme = FlexScheme.mango;
   Locale? _locale;
   final _MyRouteObserver _routeObserver = _MyRouteObserver();
 

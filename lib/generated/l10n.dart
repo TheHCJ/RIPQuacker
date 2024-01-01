@@ -482,6 +482,16 @@ class L10n {
     );
   }
 
+  /// `Settings`
+  String get settings {
+    return Intl.message(
+      'Settings',
+      name: 'settings',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Data exported to {fullPath}`
   String data_exported_to_fullPath(Object fullPath) {
     return Intl.message(

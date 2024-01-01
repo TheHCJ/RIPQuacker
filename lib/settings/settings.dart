@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:squawker/constants.dart';
 import 'package:squawker/generated/l10n.dart';
 import 'package:squawker/home/home_screen.dart';
 import 'package:squawker/settings/_about.dart';
@@ -40,32 +41,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     var appVersion = 'v${_packageInfo.version}+${_packageInfo.buildNumber}';
 
-    var pages = [
-      NavigationPage('general', (c) => L10n.of(c).general, Icons.settings_rounded),
-      NavigationPage('home', (c) => L10n.of(c).home, Icons.home_rounded),
-      NavigationPage('theme', (c) => L10n.of(c).theme, Icons.format_paint_rounded),
-      NavigationPage('data', (c) => L10n.of(c).data, Icons.storage_rounded),
-      NavigationPage('about', (c) => L10n.of(c).about, Icons.help_rounded),
-    ];
-
-    var initialPage = pages.indexWhere((element) => element.id == widget.initialPage);
-    if (initialPage == -1) {
-      initialPage = 0;
-    }
-
-    return ScaffoldWithBottomNavigation(
-      initialPage: initialPage,
-      pages: pages,
-      builder: (scrollController) {
-        return [
-          const SettingsGeneralFragment(),
-          const SettingsHomeFragment(),
-          const SettingsThemeFragment(),
-          SettingsDataFragment(legacyExportPath: _legacyExportPath),
-          SettingsAboutFragment(appVersion: appVersion)
-        ];
-      },
-      feedKey: null
+    return Scaffold(
+      appBar: AppBar(title: Text(L10n.of(context).settings)),
+      body: ListView(
+        children: [
+          ListTile(
+            title: Text(L10n.of(context).general),
+            leading: Icon(Icons.settings),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsGeneralFragment()),
+            ),
+          ),
+          ListTile(
+            title: Text(L10n.of(context).home),
+            leading: Icon(Icons.home),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsHomeFragment()),
+            ),
+          ),
+          ListTile(
+            title: Text(L10n.of(context).theme),
+            leading: Icon(Icons.palette),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsThemeFragment()),
+            ),
+          ),
+          ListTile(
+            title: Text(L10n.of(context).data),
+            leading: Icon(Icons.storage),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SettingsDataFragment(
+                        legacyExportPath: _legacyExportPath,
+                      )),
+            ),
+          ),
+          ListTile(
+            title: Text(L10n.of(context).about),
+            leading: Icon(Icons.info),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsAboutFragment(appVersion: appVersion)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

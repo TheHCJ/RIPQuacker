@@ -84,6 +84,8 @@
   "@joined": {},
   "export": "Export",
   "@export": {},
+  "settings": "Settings",
+  "@settings": {},
   "data_exported_to_fullPath": "Data exported to {fullPath}",
   "@data_exported_to_fullPath": {},
   "data_exported_to_fileName": "Data exported to {fileName}",

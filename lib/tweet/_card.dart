@@ -401,11 +401,14 @@ class TweetCard extends StatelessWidget {
               return TweetVideoUrls(broadcast['source']['noRedirectPlaybackUrl'], null);
             }));
 
-        var username = card['binding_values']['broadcaster_username']['string_value'];
-        var title = card['binding_values']['broadcast_title']['string_value'];
+        var username = card['binding_values']['broadcaster_username']?['string_value'];
+        var title = card['binding_values']['broadcast_title']?['string_value'];
+
+        username = username != null ? '@$username' : '';
+        title ??= '';
 
         // TODO: Figure out what states we can receive
-        //var state = card['binding_values']['broadcast_state']['string_value'];
+        //var state = card['binding_values']['broadcast_state']?['string_value'];
 
         // TODO: This opens the URL externally. Create a screen for it in Squawker
         return _createCard(
@@ -417,7 +420,7 @@ class TweetCard extends StatelessWidget {
                 child,
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                  child: _createListTile(context, title, '@$username', null),
+                  child: _createListTile(context, title, username, null),
                 ),
               ],
             ));
