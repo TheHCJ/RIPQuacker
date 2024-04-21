@@ -132,7 +132,13 @@ class _HomeScreenState extends State<_HomeScreen> {
       var username = link.pathSegments[0];
       var statusId = link.pathSegments[2];
 
-      pushNamedRoute(context, routeStatus, StatusScreenArguments(id: statusId, username: username,));
+      pushNamedRoute(
+          context,
+          routeStatus,
+          StatusScreenArguments(
+            id: statusId,
+            username: username,
+          ));
       return;
     }
 
@@ -231,7 +237,8 @@ class _HomeScreenState extends State<_HomeScreen> {
 
                     switch (e.id) {
                       case 'feed':
-                        return FeedScreen(key: _feedKey, scrollController: scrollController, id: '-1', name: L10n.current.feed);
+                        return FeedScreen(
+                            key: _feedKey, scrollController: scrollController, id: '-1', name: L10n.current.feed);
                       case 'subscriptions':
                         return SubscriptionsScreen();
                       case 'groups':
@@ -270,7 +277,8 @@ class ScaffoldWithBottomNavigation extends StatefulWidget {
   final List<Widget> Function(ScrollController scrollController) builder;
   final GlobalKey<FeedScreenState>? feedKey;
 
-  const ScaffoldWithBottomNavigation({Key? key, required this.pages, required this.initialPage, required this.builder, required this.feedKey})
+  const ScaffoldWithBottomNavigation(
+      {Key? key, required this.pages, required this.initialPage, required this.builder, required this.feedKey})
       : super(key: key);
 
   @override
@@ -347,28 +355,22 @@ class ScaffoldWithBottomNavigationState extends State<ScaffoldWithBottomNavigati
         _pageController?.animateToPage(idx, curve: Curves.easeInOut, duration: const Duration(milliseconds: 100));
       });
     }
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const LessSensitiveScrollPhysics(),
-        onPageChanged: (page) => Debouncer.debounce('page-change', const Duration(milliseconds: 200), () {
-          setState(() => _selectedIndex = page);
-        }),
-        children: _children,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [
-          ..._pages.map((e) => NavigationDestination(icon: Icon(e.icon, size: 22), label: e.titleBuilder(context)))
-        ],
-        onDestinationSelected: (int value) async {
-          if (_children[value] is FeedScreen && widget.feedKey != null && widget.feedKey!.currentState != null) {
-            await widget.feedKey!.currentState!.checkUpdateOrRefreshFeed();
-          }
-          _pageController?.animateToPage(value, duration: const Duration(milliseconds: 200), curve: Curves.linear);
-        }
-      ),
-    );
+    return DefaultTabController(
+        length: _pages.length,
+        child: Scaffold(
+          body: TabBarView(
+            physics: const LessSensitiveScrollPhysics(),
+            children: _children,
+          ),
+          bottomNavigationBar: TabBar(
+              tabs: [..._pages.map((e) => Tab(icon: Icon(e.icon, size: 22), text: e.titleBuilder(context)))],
+              onTap: (int value) async {
+                if (_children[value] is FeedScreen && widget.feedKey != null && widget.feedKey!.currentState != null) {
+                  await widget.feedKey!.currentState!.checkUpdateOrRefreshFeed();
+                }
+                _pageController?.animateToPage(value,
+                    duration: const Duration(milliseconds: 200), curve: Curves.linear);
+              }),
+        ));
   }
 }
