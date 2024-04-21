@@ -17,6 +17,7 @@ import 'package:squawker/home/_saved.dart';
 import 'package:squawker/home/home_model.dart';
 import 'package:squawker/profile/profile.dart';
 import 'package:squawker/search/search.dart';
+import 'package:squawker/settings/settings.dart';
 import 'package:squawker/status.dart';
 import 'package:squawker/subscriptions/subscriptions.dart';
 import 'package:squawker/trends/trends.dart';
@@ -40,18 +41,7 @@ class NavigationPage {
 }
 
 List<Widget> createCommonAppBarActions(BuildContext context) {
-  return [
-    IconButton(
-      icon: const Icon(Symbols.search),
-      onPressed: () => pushNamedRoute(context, routeSearch, SearchArguments(0, focusInputOnOpen: true)),
-    ),
-    IconButton(
-      icon: const Icon(Symbols.settings),
-      onPressed: () {
-        Navigator.pushNamed(context, routeSettings);
-      },
-    )
-  ];
+  return [];
 }
 
 final List<NavigationPage> defaultHomePages = [
@@ -285,13 +275,12 @@ class ScaffoldWithBottomNavigation extends StatefulWidget {
   State<ScaffoldWithBottomNavigation> createState() => ScaffoldWithBottomNavigationState();
 }
 
-class ScaffoldWithBottomNavigationState extends State<ScaffoldWithBottomNavigation> {
+class ScaffoldWithBottomNavigationState extends State<ScaffoldWithBottomNavigation> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
 
-  PageController? _pageController;
+  TabController? controller;
   late List<Widget> _children;
   late List<NavigationPage> _pages;
-  bool _goToSubscriptions = false;
   int _selectedIndex = 0;
 
   @override
@@ -302,18 +291,13 @@ class ScaffoldWithBottomNavigationState extends State<ScaffoldWithBottomNavigati
 
     _pages = _padToMinimumPagesLength(widget.pages);
 
-    _pageController = PageController(initialPage: widget.initialPage);
+    controller = TabController(initialIndex: widget.initialPage, length: widget.pages.length + 2, vsync: this);
 
-    _children = widget.builder(_scrollController);
-  }
-
-  void fromFeedToSubscriptions() {
-    int idx = widget.pages.indexWhere((e) => e.id == 'feed');
-    if (idx == _selectedIndex) {
-      setState(() {
-        _goToSubscriptions = true;
-      });
-    }
+    _children = widget.builder(_scrollController) +
+        [
+          SearchScreen(),
+          SettingsScreen(),
+        ];
   }
 
   List<NavigationPage> _padToMinimumPagesLength(List<NavigationPage> pages) {
@@ -343,34 +327,38 @@ class ScaffoldWithBottomNavigationState extends State<ScaffoldWithBottomNavigati
   @override
   void dispose() {
     super.dispose();
-    _pageController?.dispose();
+    controller?.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_goToSubscriptions) {
-      _goToSubscriptions = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        int idx = widget.pages.indexWhere((e) => e.id == 'subscriptions');
-        _pageController?.animateToPage(idx, curve: Curves.easeInOut, duration: const Duration(milliseconds: 100));
-      });
-    }
-    return DefaultTabController(
-        length: _pages.length,
-        child: Scaffold(
-          body: TabBarView(
-            physics: const LessSensitiveScrollPhysics(),
-            children: _children,
-          ),
-          bottomNavigationBar: TabBar(
-              tabs: [..._pages.map((e) => Tab(icon: Icon(e.icon, size: 22), text: e.titleBuilder(context)))],
-              onTap: (int value) async {
-                if (_children[value] is FeedScreen && widget.feedKey != null && widget.feedKey!.currentState != null) {
-                  await widget.feedKey!.currentState!.checkUpdateOrRefreshFeed();
-                }
-                _pageController?.animateToPage(value,
-                    duration: const Duration(milliseconds: 200), curve: Curves.linear);
-              }),
-        ));
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: TabBar(
+          controller: controller,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          dividerColor: Colors.transparent,
+          indicatorColor: theme.colorScheme.inverseSurface,
+          unselectedLabelColor: theme.colorScheme.surface,
+          labelColor: theme.colorScheme.inverseSurface,
+          tabs: [
+            ..._pages.map((e) => Tab(icon: Icon(e.icon))),
+            Tab(
+              icon: const Icon(Symbols.search),
+            ),
+            Tab(
+              icon: const Icon(Symbols.settings),
+            )
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: controller,
+        physics: const LessSensitiveScrollPhysics(),
+        children: _children,
+      ),
+    );
   }
 }
